@@ -176,15 +176,13 @@ int rk915_probe(struct platform_device *pdev)
 	return 0;
 }
 
-int rk915_remove(struct platform_device *pdev)
+void rk915_remove(struct platform_device *pdev)
 {
 	RPU_INFO_MAIN("%s\n", __func__);
 
 	hal_ops.deinit(NULL);
 
 	rk915_free_irq(hpriv->io_info);
-
-	return 0;
 }
 
 void rk915_shutdown(struct platform_device *pdev)

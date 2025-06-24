@@ -11,8 +11,8 @@ L_BUSIF=$(shell echo $(BUSIF) | tr A-Z a-z)
 
 NAME     = rk915
 
-EXTRA_CFLAGS += -Idrivers/net/wireless/rockchip_wlan/rk915/inc \
-                -Idrivers/net/wireless/rockchip_wlan/rk915/shared
+EXTRA_CFLAGS += -I$(src)/inc \
+                -I$(src)/shared
 
 EXTRA_CFLAGS += -DDEBUG
 

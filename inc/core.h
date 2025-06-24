@@ -23,7 +23,6 @@
 #include <linux/version.h>
 #include <linux/wireless.h>
 #include <linux/firmware.h>
-#include <linux/wakelock.h>
 
 #include <net/mac80211.h>
 
@@ -776,8 +775,9 @@ extern void rpu_vif_set_edca_params(unsigned short queue,
 					    struct edca_params *params,
 					    unsigned int vif_active);
 extern void rpu_vif_bss_info_changed(struct umac_vif *uvif,
-					     struct ieee80211_bss_conf
-					     *bss_conf, unsigned int changed);
+					     struct ieee80211_bss_conf *bss_conf,
+					     struct ieee80211_vif_cfg *cfg,
+					     unsigned int changed);
 extern int  rpu_tx_frame(struct sk_buff *skb,
 				 struct ieee80211_sta *sta,
 				 struct img_priv *priv,
@@ -1071,7 +1071,7 @@ int rpu_proc_tx(struct img_priv *priv, int descriptor_id, int queue);
 void rpu_unblock_all_frames(struct img_priv *priv,
 					    int ch_id);
 int load_rompatch(struct ieee80211_hw *hw);
-void stop(struct ieee80211_hw *hw);
+void stop(struct ieee80211_hw *hw, bool);
 int start_prod_mode(struct img_priv *priv, unsigned int val);
 int stop_prod_mode(struct img_priv *priv, unsigned int val);
 int start_prod_rx_mode(struct img_priv *priv, unsigned int val,

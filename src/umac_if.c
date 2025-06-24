@@ -75,8 +75,8 @@ int rpu_debug =
 
 int rpu_debug_level =
 	RPU_DEBUG_LEVEL_ERROR	|
-	RPU_DEBUG_LEVEL_INFO/*	|
-	RPU_DEBUG_LEVEL_DEBUG*/;
+	RPU_DEBUG_LEVEL_INFO	|
+	RPU_DEBUG_LEVEL_DEBUG;
 
 module_param(rpu_debug, uint, 0);
 MODULE_PARM_DESC(rpu_debug, " rpu_debug: Configure Debugging Mask");
@@ -519,9 +519,6 @@ void rk915_signal_io_error(int reason)
 		return;
 	hpriv->fw_error = 1;
 	if (!hpriv->fw_error_processing) {
-		if (!wake_lock_active(&hpriv->fw_err_lock))
-			wake_lock(&hpriv->fw_err_lock);
-		
 		hpriv->fw_error_processing = 1;
 		hpriv->fw_error_counter++;
 		hpriv->fw_error_reason = reason;
@@ -714,7 +711,7 @@ static void tx(struct ieee80211_hw *hw,
 tx_status:
 	tx_info->flags |= IEEE80211_TX_STAT_ACK;
 	tx_info->status.rates[0].count = 1;
-	ieee80211_tx_status(hw, skb);
+	ieee80211_tx_status_ni(hw, skb);
 }
 
 static int start(struct ieee80211_hw *hw)
@@ -756,7 +753,7 @@ out:
 	return ret;
 }
 
-void stop(struct ieee80211_hw *hw)
+void stop(struct ieee80211_hw *hw, bool)
 {
 	struct img_priv    *priv= (struct img_priv *)hw->priv;
 
@@ -1199,7 +1196,7 @@ prog_rpu_fail:
 
 static int conf_vif_tx(struct ieee80211_hw  *hw,
 		       struct ieee80211_vif *vif,
-		       unsigned short queue,
+		       unsigned int link_id, u16 queue,
 		       const struct ieee80211_tx_queue_params *txq_params)
 {
 	struct img_priv *priv = hw->priv;
@@ -1516,7 +1513,7 @@ static void bss_info_changed(struct ieee80211_hw *hw,
 			     struct ieee80211_vif *vif,
 			     struct ieee80211_bss_conf *bss_conf,
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 4, 0))
-                             u32 changed)
+                             u64 changed)
 #else
 			     unsigned int changed)
 #endif
@@ -1542,6 +1539,7 @@ static void bss_info_changed(struct ieee80211_hw *hw,
 
 	rpu_vif_bss_info_changed((struct umac_vif *)&vif->drv_priv,
 					 bss_conf,
+					 &vif->cfg,
 					 changed);
 	mutex_unlock(&priv->mutex);
 }
@@ -2223,6 +2221,13 @@ static struct ieee80211_ops ops = {
 	.cancel_hw_scan	    = cancel_hw_scan,
 	.set_rekey_data     = NULL,
 	.set_rts_threshold  = set_rts_threshold,
+	/* dummy required callbacks */
+	.wake_tx_queue	    = ieee80211_handle_wake_tx_queue,
+	.add_chanctx = ieee80211_emulate_add_chanctx,
+	.remove_chanctx = ieee80211_emulate_remove_chanctx,
+	.change_chanctx = ieee80211_emulate_change_chanctx,
+	.switch_vif_chanctx = ieee80211_emulate_switch_vif_chanctx,
+
 };
 
 void rpu_exit(void)
@@ -2250,9 +2255,9 @@ void rpu_exit(void)
 
 void init_mac_addr(void)
 {
-	if (rockchip_wifi_mac_addr(vif_macs[0]) != 0) {
-		random_ether_addr(vif_macs[0]);
-	}
+	//if (rockchip_wifi_mac_addr(vif_macs[0]) != 0) {
+		eth_random_addr(vif_macs[0]);
+	//}
 	img_ether_addr_copy(vif_macs[1], vif_macs[0]);
 
 	/* Set the Locally Administered bit*/
@@ -2271,6 +2276,7 @@ int rpu_init(void)
 
 	RPU_DEBUG_UMACIF("%s: %s\n", UMAC_IF_TAG, __func__);
 	/* Allocate new hardware device */
+	RPU_ERROR_UMACIF("ieee80211_alloc_hw(%d, ...)\n", sizeof(struct img_priv));
 	hw = ieee80211_alloc_hw(sizeof(struct img_priv), &ops);
 
 	if (hw == NULL) {

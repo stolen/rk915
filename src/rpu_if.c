@@ -13,6 +13,7 @@
 #include <linux/slab.h>
 #include <linux/spinlock.h>
 #include <linux/of_platform.h>
+#include <linux/of.h>
 
 #include "core.h"
 #include "utils.h"
@@ -2936,8 +2937,6 @@ int rpu_msg_handler(void *nbuff)
 
 		if (dis->reason_code == REASON_NW_LOST) {
 			RPU_INFO_IF("connection lost\n");
-			if (!wake_lock_active(&hpriv->fw_err_lock))
-				wake_lock_timeout(&hpriv->fw_err_lock, msecs_to_jiffies(3*1000));
 			for (i = 0; i < MAX_VIFS; i++) {
 				if (!(priv->active_vifs & (1 << i)))
 					continue;

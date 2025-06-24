@@ -19,7 +19,7 @@
 #include <linux/syscalls.h>
 #include <linux/fs.h>
 #include <asm/uaccess.h>
-#include <linux/rfkill-wlan.h>
+#include <linux/rfkill.h>
 #include <linux/sched.h>
 #include <linux/kthread.h>
 #include <linux/workqueue.h>
@@ -708,7 +708,7 @@ reinit:
 	host->dev = &gfunc1->dev;
 
 	host->io_ops = &sdio_host_ops;
-	host->irq = rockchip_wifi_get_oob_irq();
+	host->irq = 0; // rockchip_wifi_get_oob_irq();
 #if SDIO_AUTO_SLEEP
 	// init delay sleep worker
 	INIT_DELAYED_WORK(&host->sleep_work, sleep_timer_expiry);

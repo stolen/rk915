@@ -65,7 +65,7 @@ static void vif_bcn_timer_expiry(unsigned long data)
 		return;
 
 	if (uvif->vif->type == NL80211_IFTYPE_AP) {
-		temp = skb = ieee80211_beacon_get(uvif->priv->hw, uvif->vif);
+		temp = skb = ieee80211_beacon_get(uvif->priv->hw, uvif->vif, 0);
 
 		if (!skb) {
 			/* No beacon, so dont transmit braodcast frames*/
@@ -111,7 +111,7 @@ static void vif_bcn_timer_expiry(unsigned long data)
 		spin_unlock_bh(&uvif->priv->bcast_lock);
 
 	} else {
-		skb = ieee80211_beacon_get(uvif->priv->hw, uvif->vif);
+		skb = ieee80211_beacon_get(uvif->priv->hw, uvif->vif, 0);
 
 		if (!skb)
 			goto reschedule_timer;

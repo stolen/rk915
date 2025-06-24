@@ -7,7 +7,7 @@
  * (at your option) any later version.
  */
 
-#include <asm/unaligned.h>
+#include <linux/unaligned.h>
 
 #include <linux/clk.h>
 #include <linux/etherdevice.h>
@@ -736,8 +736,6 @@ static void fw_err_work_fn(struct work_struct *work)
 	RPU_ERROR_ROCOVERY("-------- fw error recovery end --------\n");
 
 unlock_out:
-	if (wake_lock_active(&hpriv->fw_err_lock))
-		wake_unlock(&hpriv->fw_err_lock);
 }
 
 //static void tx_tasklet_fn(unsigned long data)
@@ -971,7 +969,7 @@ static void tx_work_fn(struct work_struct *work)
 #ifdef TX_USE_THREAD        
     }
 
-	complete_and_exit(&tsk->completed, 0);
+	kthread_complete_and_exit(&tsk->completed, 0);
 	RPU_INFO_HAL("%s exit\n", __func__);    
 #endif
 }
@@ -1163,7 +1161,7 @@ static int rx_thread(void *data)
 	memset(hal_event_rx_counts_one_interrupts, 0, 8*sizeof(unsigned int));
 	memset(hal_event_rx_counts_one_packet, 0, 8*sizeof(unsigned int));
 
-	sched_setscheduler(current, SCHED_FIFO, &param);
+	//sched_setscheduler(current, SCHED_FIFO, &param);
 	//complete(&tsk->completed);
 	while (1) {
 		if (priv->io_info->rx_serias_count == 0 &&
@@ -1285,7 +1283,7 @@ static int rx_thread(void *data)
 		priv->rcv_handler(rx_skb);
 #endif
 	}
-	complete_and_exit(&tsk->completed, 0);
+	kthread_complete_and_exit(&tsk->completed, 0);
 	RPU_INFO_HAL("%s exit\n", __func__);
 }
 
@@ -1534,8 +1532,6 @@ static int hal_deinit(void *dev)
 
 	cancel_work_sync(&hpriv->fw_err_work);
 
-	wake_lock_destroy(&hpriv->fw_err_lock);
-
 #ifdef TX_USE_THREAD
 	PROC_STOP(&hpriv->thr_tx_ctl);
 #endif
@@ -1595,8 +1591,6 @@ static int hal_init(void *dev)
 	skb_queue_head_init(&hpriv->txq);
 
 	INIT_WORK(&hpriv->fw_err_work, fw_err_work_fn);
-
-	wake_lock_init(&hpriv->fw_err_lock, WAKE_LOCK_SUSPEND, "rk915_lock");
 
 	hpriv->pm_notifier.notifier_call = rk915_pm_notifier;
 	register_pm_notifier(&hpriv->pm_notifier);

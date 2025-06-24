@@ -1,4 +1,4 @@
-#include <linux/rfkill-wlan.h>
+#include <linux/rfkill.h>
 
 #include "core.h"
 #include "if_io.h"
@@ -8,19 +8,19 @@ extern int hal_irq_handler(struct hal_priv *p);
 
 void rk915_rescan_card(unsigned insert)
 {
-    rockchip_wifi_set_carddetect(insert);
+    //rockchip_wifi_set_carddetect(insert);
 }
 
 void rk915_poweron(void)
 {
-	rockchip_wifi_power(0);
-	mdelay(RK915_POWER_ON_DELAY_MS);
-	rockchip_wifi_power(1);
+	//rockchip_wifi_power(0);
+	//mdelay(RK915_POWER_ON_DELAY_MS);
+	//rockchip_wifi_power(1);
 }
 
 void rk915_poweroff(void)
 {
-	rockchip_wifi_power(0);
+	//rockchip_wifi_power(0);
 }
 
 static irqreturn_t hal_interrupt(int irq, void *dev_id)
@@ -41,6 +41,7 @@ void rk915_irq_enable(int enable)
 int rk915_register_irq(struct host_io_info *host)
 {
 	int ret;
+	if (host->irq == 0) { return 0; }
 	
 	ret = devm_request_irq(host->dev, host->irq, hal_interrupt,
 				IRQF_TRIGGER_RISING|IRQF_NO_SUSPEND, "rk915", hpriv);
@@ -55,6 +56,7 @@ int rk915_register_irq(struct host_io_info *host)
 
 int rk915_free_irq(struct host_io_info *host)
 {
+	if (host->irq == 0) { return 0; }
 	if (host->irq_request) {
 		devm_free_irq(host->dev, host->irq, hpriv);
 		host->irq_request = false;
