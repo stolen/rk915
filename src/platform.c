@@ -41,7 +41,7 @@ void rk915_irq_enable(int enable)
 int rk915_register_irq(struct host_io_info *host)
 {
 	int ret;
-	if (host->irq == 0) { return 0; }
+	if (host->irq <= 0) { return 0; }
 	
 	ret = devm_request_irq(host->dev, host->irq, hal_interrupt,
 				IRQF_TRIGGER_RISING|IRQF_NO_SUSPEND, "rk915", hpriv);
@@ -56,7 +56,7 @@ int rk915_register_irq(struct host_io_info *host)
 
 int rk915_free_irq(struct host_io_info *host)
 {
-	if (host->irq == 0) { return 0; }
+	if (host->irq <= 0) { return 0; }
 	if (host->irq_request) {
 		devm_free_irq(host->dev, host->irq, hpriv);
 		host->irq_request = false;

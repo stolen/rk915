@@ -75,8 +75,8 @@ int rpu_debug =
 
 int rpu_debug_level =
 	RPU_DEBUG_LEVEL_ERROR	|
-	RPU_DEBUG_LEVEL_INFO	|
-	RPU_DEBUG_LEVEL_DEBUG;
+	RPU_DEBUG_LEVEL_INFO/*	|
+	RPU_DEBUG_LEVEL_DEBUG*/;
 
 module_param(rpu_debug, uint, 0);
 MODULE_PARM_DESC(rpu_debug, " rpu_debug: Configure Debugging Mask");
@@ -2276,7 +2276,6 @@ int rpu_init(void)
 
 	RPU_DEBUG_UMACIF("%s: %s\n", UMAC_IF_TAG, __func__);
 	/* Allocate new hardware device */
-	RPU_ERROR_UMACIF("ieee80211_alloc_hw(%d, ...)\n", sizeof(struct img_priv));
 	hw = ieee80211_alloc_hw(sizeof(struct img_priv), &ops);
 
 	if (hw == NULL) {

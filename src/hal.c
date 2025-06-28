@@ -1507,8 +1507,10 @@ static int hal_deinit(void *dev)
 {
 	struct sk_buff *skb;
 
-	if (!hpriv->hal_init)
+	if (!hpriv->hal_init) {
+		proc_exit();
 		return 0;
+	}
 
 	(void)(dev);
 

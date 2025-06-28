@@ -26,6 +26,7 @@
 #include <linux/platform_device.h>
 #include <linux/suspend.h>
 #include <linux/of.h>
+#include <linux/of_irq.h>
 #include <linux/io.h>
 #include <linux/of_address.h>
 #include <linux/delay.h>
@@ -708,7 +709,7 @@ reinit:
 	host->dev = &gfunc1->dev;
 
 	host->io_ops = &sdio_host_ops;
-	host->irq = 0; // rockchip_wifi_get_oob_irq();
+	host->irq = of_irq_get_byname(host->dev->of_node, "host-wake");
 #if SDIO_AUTO_SLEEP
 	// init delay sleep worker
 	INIT_DELAYED_WORK(&host->sleep_work, sleep_timer_expiry);
