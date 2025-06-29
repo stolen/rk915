@@ -773,7 +773,7 @@ static void tx_work_fn(struct work_struct *work)
 #endif
 
 #ifdef TX_USE_THREAD
-	sched_setscheduler(current, SCHED_FIFO, &param);
+	//sched_setscheduler(current, SCHED_FIFO, &param);
 	//complete(&tsk->completed);
 #endif
 
