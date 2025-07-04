@@ -184,6 +184,7 @@ struct hal_priv {
 	int fw_error_reason;
 	int lpw_error_counter;
 	int fw_error_cmd_done;
+	struct wake_lock fw_err_lock;
 	int during_fw_download;
 	int shutdown;
 

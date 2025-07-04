@@ -736,6 +736,8 @@ static void fw_err_work_fn(struct work_struct *work)
 	RPU_ERROR_ROCOVERY("-------- fw error recovery end --------\n");
 
 unlock_out:
+	if (wake_lock_active(&hpriv->fw_err_lock))
+		wake_unlock(&hpriv->fw_err_lock);
 }
 
 //static void tx_tasklet_fn(unsigned long data)
@@ -773,7 +775,7 @@ static void tx_work_fn(struct work_struct *work)
 #endif
 
 #ifdef TX_USE_THREAD
-	//sched_setscheduler(current, SCHED_FIFO, &param);
+	sched_set_fifo_low(current);
 	//complete(&tsk->completed);
 #endif
 
@@ -1161,7 +1163,7 @@ static int rx_thread(void *data)
 	memset(hal_event_rx_counts_one_interrupts, 0, 8*sizeof(unsigned int));
 	memset(hal_event_rx_counts_one_packet, 0, 8*sizeof(unsigned int));
 
-	//sched_setscheduler(current, SCHED_FIFO, &param);
+	sched_set_fifo_low(current);
 	//complete(&tsk->completed);
 	while (1) {
 		if (priv->io_info->rx_serias_count == 0 &&
@@ -1534,6 +1536,8 @@ static int hal_deinit(void *dev)
 
 	cancel_work_sync(&hpriv->fw_err_work);
 
+	wake_lock_destroy(&hpriv->fw_err_lock);
+
 #ifdef TX_USE_THREAD
 	PROC_STOP(&hpriv->thr_tx_ctl);
 #endif
@@ -1593,6 +1597,8 @@ static int hal_init(void *dev)
 	skb_queue_head_init(&hpriv->txq);
 
 	INIT_WORK(&hpriv->fw_err_work, fw_err_work_fn);
+
+	wake_lock_init(&hpriv->fw_err_lock, WAKE_LOCK_SUSPEND, "rk915_lock");
 
 	hpriv->pm_notifier.notifier_call = rk915_pm_notifier;
 	register_pm_notifier(&hpriv->pm_notifier);

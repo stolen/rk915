@@ -519,6 +519,9 @@ void rk915_signal_io_error(int reason)
 		return;
 	hpriv->fw_error = 1;
 	if (!hpriv->fw_error_processing) {
+		if (!wake_lock_active(&hpriv->fw_err_lock))
+			wake_lock(&hpriv->fw_err_lock);
+
 		hpriv->fw_error_processing = 1;
 		hpriv->fw_error_counter++;
 		hpriv->fw_error_reason = reason;
@@ -711,7 +714,7 @@ static void tx(struct ieee80211_hw *hw,
 tx_status:
 	tx_info->flags |= IEEE80211_TX_STAT_ACK;
 	tx_info->status.rates[0].count = 1;
-	ieee80211_tx_status_ni(hw, skb);
+	ieee80211_tx_status_skb(hw, skb);
 }
 
 static int start(struct ieee80211_hw *hw)
@@ -753,7 +756,7 @@ out:
 	return ret;
 }
 
-void stop(struct ieee80211_hw *hw, bool)
+void stop(struct ieee80211_hw *hw, bool flag)
 {
 	struct img_priv    *priv= (struct img_priv *)hw->priv;
 
@@ -1537,9 +1540,8 @@ static void bss_info_changed(struct ieee80211_hw *hw,
 		changed &= ~BSS_CHANGED_BEACON_ENABLED;
 	}
 
-	rpu_vif_bss_info_changed((struct umac_vif *)&vif->drv_priv,
+	rpu_vif_bss_info_changed((struct umac_vif *)&vif->drv_priv, vif, hw,
 					 bss_conf,
-					 &vif->cfg,
 					 changed);
 	mutex_unlock(&priv->mutex);
 }

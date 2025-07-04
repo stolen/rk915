@@ -313,9 +313,9 @@ prog_rpu_fail:
 }
 
 
-void rpu_vif_bss_info_changed(struct umac_vif *uvif,
+void rpu_vif_bss_info_changed(struct umac_vif *uvif, struct ieee80211_vif *vif,
+					struct ieee80211_hw *hw,
 				      struct ieee80211_bss_conf *bss_conf,
-				      struct ieee80211_vif_cfg *cfg,
 				      unsigned int changed)
 {
 	unsigned int caps = 0;
@@ -402,9 +402,9 @@ void rpu_vif_bss_info_changed(struct umac_vif *uvif,
 	switch (uvif->vif->type) {
 	case NL80211_IFTYPE_STATION:
 		if (changed & BSS_CHANGED_ASSOC) {
-			if (cfg->assoc) {
+			if (vif->cfg.assoc) {
 				RPU_DEBUG_VIF("%s-CORE: AID %d,",
-					   uvif->priv->name, cfg->aid);
+					   uvif->priv->name, vif->cfg.aid);
 				RPU_DEBUG_VIF(" CAPS 0x%04x\n",
 					   bss_conf->assoc_capability |
 					   (bss_conf->qos << 9));
@@ -426,15 +426,14 @@ void rpu_vif_bss_info_changed(struct umac_vif *uvif,
 				CALL_RPU(rpu_prog_vif_aid,
 					  uvif->vif_index,
 					  uvif->vif->addr,
-					  cfg->aid);
+					  vif->cfg.aid);
 
-				/*
-				center_freq = bss_conf->chandef.chan->center_freq;
+				center_freq = hw->conf.chandef.chan->center_freq;
 				chan = ieee80211_frequency_to_channel(center_freq);
 				CALL_RPU(rpu_prog_vif_op_channel,
 					  uvif->vif_index,
 					  uvif->vif->addr,
-					  chan); */
+					  chan);
 
 				caps = (bss_conf->assoc_capability |
 					(bss_conf->qos << 9));
