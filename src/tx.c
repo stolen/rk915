@@ -396,7 +396,7 @@ static void tx_status(struct sk_buff *skb,
 
 	priv->stats->tx_dones_to_stack++;
 
-	ieee80211_tx_status_ni(priv->hw, skb);
+	ieee80211_tx_status_skb(priv->hw, skb);
 prog_rpu_fail:
 	return;
 }
@@ -1065,6 +1065,9 @@ int __rpu_tx_frame(struct img_priv *priv,
 
 static void rpu_tx_wake_lock(void)
 {
+	if (wake_lock_active(&hpriv->fw_err_lock))
+		wake_unlock(&hpriv->fw_err_lock);
+	wake_lock_timeout(&hpriv->fw_err_lock, msecs_to_jiffies(3*1000));
 }
 
 int rpu_tx_frame(struct sk_buff *skb,
