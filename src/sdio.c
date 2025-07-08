@@ -66,6 +66,7 @@ static const struct sdio_device_id rk915_sdio_devices[] = {
 	{SDIO_DEVICE(MANUFACTURER_CODE, MANUFACTURER_ID_EAGLE_BASEX)},
         {},
 };
+MODULE_DEVICE_TABLE(sdio, rk915_sdio_devices);
 
 struct device *hal_get_dev(void)
 {

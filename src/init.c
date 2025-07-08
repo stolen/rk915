@@ -211,7 +211,7 @@ static struct platform_driver rk915_driver =
     .shutdown = rk915_shutdown,
     .id_table = rk915_id_table,
     .driver = {
-        .name = "Rockchip rk915 wifi driver",
+        .name = "rk915-wifi",
         .owner = THIS_MODULE,
     }
 };
